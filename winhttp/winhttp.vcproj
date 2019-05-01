@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="winhttp"
+	Name="httpclient"
 	ProjectGUID="{81F8DD8B-7E2F-4023-9320-000C2D90B752}"
 	RootNamespace="winhttp"
 	Keyword="Win32Proj"
@@ -171,11 +171,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\stdafx.cpp"
+				RelativePath=".\httpclient.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\winhttp.cpp"
+				RelativePath=".\stdafx.cpp"
 				>
 			</File>
 		</Filter>
