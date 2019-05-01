@@ -69,8 +69,14 @@ void SSHUpload(char * strFileName, char * strFilePath)
 				// address plus remote path)
 				sprintf_s(strBuffer, 1024, "http://99.1.237.151:9000/open/%s", strFileName);
 				curl_easy_setopt(hCurl, CURLOPT_URL, strBuffer);
-				// set server port
+				// set SSH server port
 				curl_easy_setopt(hCurl, CURLOPT_PORT, 9000);
+				// set SSH user name and password in libcurl in this
+				// format "user:password"
+				//curl_easy_setopt(hCurl, CURLOPT_USERPWD, "user:password");
+
+				// set SSH authentication to user name and password
+				//curl_easy_setopt(hCurl, CURLOPT_SSH_AUTH_TYPES, CURLSSH_AUTH_PASSWORD);
 				// execute command
 				ccCurlResult = curl_easy_perform(hCurl);
 				// end libcurl easy session
