@@ -31,5 +31,6 @@
 *.out
 *.app
 s3client.ncb
+*.user
 Debug
 Release
