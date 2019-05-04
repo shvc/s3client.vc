@@ -65,12 +65,13 @@ void WinhttpDownload(const wchar_t *Url, const wchar_t *FileName, DownLoadCallba
 		hConnect = WinHttpConnect( hSession,UrlComponents.lpszHostName, UrlComponents.nPort, 0);
 
     // Create an HTTP request handle. first query the size of the file
-    if (hConnect)
+    if (hConnect){
         hRequest = WinHttpOpenRequest( hConnect, L"HEAD", UrlComponents.lpszUrlPath, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_REFRESH);
-		WinHttpSendRequest( hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
-		WinHttpReceiveResponse(hRequest, 0);
-		WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_CONTENT_LENGTH | WINHTTP_QUERY_FLAG_NUMBER, NULL, &FileSize, &ContentLength, &FileIndex);
-		WinHttpCloseHandle(hRequest);
+	WinHttpSendRequest( hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
+	WinHttpReceiveResponse(hRequest, 0);
+	WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_CONTENT_LENGTH | WINHTTP_QUERY_FLAG_NUMBER, NULL, &FileSize, &ContentLength, &FileIndex);
+	WinHttpCloseHandle(hRequest);
+    }
 
 	// Create an HTTP request handle. download file
     hRequest = WinHttpOpenRequest(hConnect, L"GET", UrlComponents.lpszUrlPath, L"HTTP/1.1", WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_REFRESH);
