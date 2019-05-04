@@ -28,18 +28,18 @@ void dcallback(int ContentSize, int file_size)
 
 void WinhttpDownload(const wchar_t *Url, const wchar_t *FileName, DownLoadCallback Func)
 {
-	DWORD dwSize = 0;
+    DWORD dwSize = 0;
     DWORD dwDownloaded = 0;
     BOOL  bResults = TRUE;
     HINTERNET  hSession = NULL, 
                hConnect = NULL,
                hRequest = NULL;
 
-	URL_INFO url_info = { 0 };
-	URL_COMPONENTS UrlComponents = { 0 };
+    URL_INFO url_info = { 0 };
+    URL_COMPONENTS UrlComponents = { 0 };
 
-	UrlComponents.dwStructSize = sizeof(UrlComponents);
-	UrlComponents.lpszExtraInfo = url_info.szExtraInfo;
+    UrlComponents.dwStructSize = sizeof(UrlComponents);
+    UrlComponents.lpszExtraInfo = url_info.szExtraInfo;
     UrlComponents.lpszHostName = url_info.szHostName;
     UrlComponents.lpszPassword = url_info.szPassword;
     UrlComponents.lpszScheme = url_info.szScheme;
@@ -53,12 +53,12 @@ void WinhttpDownload(const wchar_t *Url, const wchar_t *FileName, DownLoadCallba
         UrlComponents.dwUrlPathLength = 
         UrlComponents.dwUserNameLength = 512;
 
-	WinHttpCrackUrl(Url, 0, ICU_ESCAPE, &UrlComponents);
+    WinHttpCrackUrl(Url, 0, ICU_ESCAPE, &UrlComponents);
 	
     // Use WinHttpOpen to obtain a session handle.
-	hSession = WinHttpOpen(NULL, WINHTTP_ACCESS_TYPE_NO_PROXY, NULL, NULL, 0);
-	DWORD ContentLength = sizeof(ContentLength);
-	DWORD FileSize, FileIndex = 0;
+    hSession = WinHttpOpen(NULL, WINHTTP_ACCESS_TYPE_NO_PROXY, NULL, NULL, 0);
+    DWORD ContentLength = sizeof(ContentLength);
+    DWORD FileSize, FileIndex = 0;
 
     // Specify an HTTP server.
     if (hSession)
@@ -73,16 +73,16 @@ void WinhttpDownload(const wchar_t *Url, const wchar_t *FileName, DownLoadCallba
 		WinHttpCloseHandle(hRequest);
 
 	// Create an HTTP request handle. download file
-	hRequest = WinHttpOpenRequest(hConnect, L"GET", UrlComponents.lpszUrlPath, L"HTTP/1.1", WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_REFRESH);
+    hRequest = WinHttpOpenRequest(hConnect, L"GET", UrlComponents.lpszUrlPath, L"HTTP/1.1", WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_REFRESH);
     bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
     bResults = WinHttpReceiveResponse(hRequest, 0);
 
- //   // download file
-	DWORD BUF_LEN = 1024, ReadedLen = 0;
-	BYTE *pBuffer = NULL;
-	pBuffer = new BYTE[BUF_LEN];
+    // download file
+    DWORD BUF_LEN = 1024, ReadedLen = 0;
+    BYTE *pBuffer = NULL;
+    pBuffer = new BYTE[BUF_LEN];
 
-	HANDLE hFile = CreateFileW(FileName, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE hFile = CreateFileW(FileName, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
     // Keep checking for data until there is nothing left.
     do 
@@ -111,13 +111,13 @@ void WinhttpDownload(const wchar_t *Url, const wchar_t *FileName, DownLoadCallba
         }
         else
         {
-			ReadedLen += dwDownloaded;
+	    ReadedLen += dwDownloaded;
 
-			// write into file
-			WriteFile(hFile, pBuffer, dwDownloaded, &dwDownloaded, NULL);
+	    // write into file
+	    WriteFile(hFile, pBuffer, dwDownloaded, &dwDownloaded, NULL);
 
-			// callback of the process
-			Func(FileSize, ReadedLen);
+	    // callback of the process
+	    Func(FileSize, ReadedLen);
         }
 
         // This condition should never be reached since WinHttpQueryDataAvailable
@@ -145,8 +145,9 @@ void WinhttpUpload()
 //ensure the features of HTTP upload and download
 int _tmain(int argc, _TCHAR* argv[])
 {
-	WinhttpDownload(L"http://127.0.0.1:9000/alexbucket/winhttp.md", L"./winhttp.md", &dcallback);
-	printf("Press any key to continue...");
-	_getch();
-	return 0;
+    //need the minio IP Address and the path of file to write
+    WinhttpDownload(L"http://127.0.0.1:9000/alexbucket/winhttp.md", L"./winhttp.md", &dcallback);
+    printf("Press any key to continue...");
+    _getch();
+    return 0;
 }
