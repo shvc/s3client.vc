@@ -1,6 +1,5 @@
-// test_curl.cpp : Defines the entry point for the console application.
+// curlclient.cpp : Defines the entry point for the console application.
 //
-
 #include "stdafx.h"
 #include <conio.h>
 #include <windows.h>
@@ -31,8 +30,10 @@ void UploadFile(char * strURL, char * strFileName)
 	
 	LARGE_INTEGER liFileSize;
 	// check parameters
-	if((strFileName == NULL || strlen(strFileName) == 0) || (strURL == NULL || strlen(strURL) == 0))
+	if( strURL == NULL || strlen(strURL) == 0 || strFileName == NULL || strlen(strFileName) == 0 )
+	{
 		return;
+	}
 
 	// create a handle to the file
 	hFile = CreateFileA(strFileName, // file to open
@@ -82,20 +83,21 @@ void UploadFile(char * strURL, char * strFileName)
 		CloseHandle(hFile);
 		// global libcurl cleanup
 		curl_global_cleanup();
-		if (ccCurlResult == CURLE_OK)
+		if (ccCurlResult == CURLE_OK) {
 			printf("File uploaded successfully.\n");
-		else
+		} else {
 			printf("File upload failed. Curl error: %d\n", ccCurlResult);
-	}
-	else
+		}
+	} else {
 		printf("File upload failed! Could not open local file");
+	}
 }
 
 
 size_t libcurl_read_stream(void * pBuffer, size_t size, size_t nmemb, void * stream)
 {
 	std::ifstream *is = (std::ifstream*)stream;
-	is->read((char*)pBuffer, size*nmemb); 
+	is->read((char*)pBuffer, size * nmemb); 
 	return is->gcount();
 }
 
@@ -105,8 +107,10 @@ void UploadFileStream(char * strURL, char * strFileName)
 	curl_off_t cotFileSize;
 	CURLcode ccCurlResult = CURL_LAST;
 	// check parameters
-	if((strFileName == NULL || strlen(strFileName) == 0) || (strURL == NULL || strlen(strURL) == 0))
+	if( strURL == NULL || strlen(strURL) == 0 || strFileName == NULL || strlen(strFileName) == 0 )
+	{
 		return;
+	}
 
 	// ifstream: read file stream
 	std::ifstream filestream(strFileName, std::ios::binary);
@@ -155,13 +159,13 @@ void UploadFileStream(char * strURL, char * strFileName)
 		// global libcurl cleanup
 		curl_global_cleanup();
 		if (ccCurlResult == CURLE_OK)
+		{
 			printf("File uploaded successfully.\n");
-		else
+		} else {
 			printf("File upload failed. Curl error: %d\n", ccCurlResult);
+		}
 		filestream.close();
-	}
-	else
-	{
+	} else {
 		printf("File upload failed! Could not open local file");
 	}
 }
