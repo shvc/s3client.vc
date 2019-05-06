@@ -12,10 +12,8 @@ using namespace std;
 size_t libcurl_read_callback(void * pBuffer, size_t size, size_t nmemb, void * hFile)
 {
 	DWORD dwNumberOfBytesRead = 0;
-	// 从hFile中读取数据, 每次读取size*nmemb的数据存储到pBuffer中. dwNumberOfBytesRead记录已读取的字节数
 	BOOL bResult = ReadFile((HANDLE) hFile, pBuffer, size * nmemb, &dwNumberOfBytesRead, NULL);
 
-	// 这个返回值返回已读取的字节数, 类型为DWORD 5646
 	return dwNumberOfBytesRead;
 }
 
@@ -29,7 +27,6 @@ void UploadFile(char * strFileName, char * strFilePath)
 {
 	char strBuffer[1024];
 	CURL * hCurl;
-	// CURLcode: 枚举
 	CURLcode ccCurlResult = CURL_LAST;
 	// curl_off_t 
 	curl_off_t cotFileSize;
@@ -112,14 +109,9 @@ size_t libcurl_read_stream(void * pBuffer, size_t size, size_t nmemb, void * str
 	std::streambuf *psbuf_begin = is->rdbuf();
 	
         is->read((char*)pBuffer, size*nmemb);
-	
-	//std::streambuf *psbuf_end = is->rdbuf();
-	
-	
-	// streamsize = signed int Gcount = 5496  
-	std::streamsize Gcount = is->gcount();
 
-	//BOOL bResult = ReadFile((HANDLE) hFile, pBuffer, size * nmemb, &dwNumberOfBytesRead, NULL);
+	// streamsize = signed int  
+	std::streamsize Gcount = is->gcount();
 	return Gcount;
 }
 
@@ -142,7 +134,7 @@ void UploadFileStream(char * strFileName, char * strFilePath)
 		sprintf_s(strBuffer, 1024, "%s\\%s", strFilePath, strFileName);
 
 	// ifstream: read file stream
-	std::ifstream filestream(strBuffer);
+	std::ifstream filestream(strBuffer, ios::binary);
 
 	filestream.seekg(0,ios::end);
 	streampos FileLength = filestream.tellg();
@@ -201,7 +193,6 @@ void UploadFileStream(char * strFileName, char * strFilePath)
 	else
 		printf("File upload failed! Could not open local file");
 }
-
 
 int _tmain(int argc, _TCHAR* argv[])
 {
