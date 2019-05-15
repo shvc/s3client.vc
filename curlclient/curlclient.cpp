@@ -59,6 +59,12 @@ void UploadFile(char * strURL, char * strFileName)
 				// enable uploading
 				curl_easy_setopt(hCurl, CURLOPT_UPLOAD, TRUE);
 				curl_easy_setopt(hCurl, CURLOPT_CUSTOMREQUEST, "PUT");
+				
+				struct curl_slist *headers = NULL;
+				headers = curl_slist_append(headers, "Content-Type:application/octet-stream");
+				headers = curl_slist_append(headers, "x-emc-namespace:open");
+				curl_easy_setopt(hCurl, CURLOPT_HTTPHEADER, headers);
+				
 				// inform libcurl of the file's size
 				GetFileSizeEx(hFile, &liFileSize);
 				cotFileSize = liFileSize.QuadPart;
@@ -136,6 +142,7 @@ void UploadFileStream(char * strURL, char * strFileName)
 				curl_easy_setopt(hCurl, CURLOPT_CUSTOMREQUEST, "PUT");
 				struct curl_slist *headers = NULL;
 				headers = curl_slist_append(headers, "Content-Type:application/octet-stream");
+				headers = curl_slist_append(headers, "x-emc-namespace:open");
 				curl_easy_setopt(hCurl, CURLOPT_HTTPHEADER, headers);
 				// inform libcurl of the file's size
 				cotFileSize = FileLength;
