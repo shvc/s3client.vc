@@ -20,10 +20,11 @@ int libcurl_progress_callback (void * clientp, double dltotal, double dlnow,doub
 	return 0;
 }
 
-void UploadFile(char * strURL, char * strFileName)
+void UploadFile(char * strURL ,char*  ecsNamespace, char * strFileName)
 {
 	CURL * hCurl;
 	HANDLE hFile;
+	char strbuf[1024];
 	CURLcode ccCurlResult = CURL_LAST;
 	// curl_off_t 
 	curl_off_t cotFileSize;
@@ -62,7 +63,11 @@ void UploadFile(char * strURL, char * strFileName)
 				
 				struct curl_slist *headers = NULL;
 				headers = curl_slist_append(headers, "Content-Type:application/octet-stream");
-				headers = curl_slist_append(headers, "x-emc-namespace:open");
+				if(ecsNamespace != NULL && strlen(ecsNamespace) > 0)
+				{
+					sprintf_s(strbuf, 1024, "x-emc-namespace:%s", ecsNamespace);
+					headers = curl_slist_append(headers, strbuf);
+				}
 				curl_easy_setopt(hCurl, CURLOPT_HTTPHEADER, headers);
 				
 				// inform libcurl of the file's size
@@ -107,10 +112,11 @@ size_t libcurl_read_stream(void * pBuffer, size_t size, size_t nmemb, void * str
 	return is->gcount();
 }
 
-void UploadFileStream(char * strURL, char * strFileName)
+void UploadFileStream(char * strURL, char* ecsNamespace, char * strFileName)
 {
 	CURL * hCurl;
 	curl_off_t cotFileSize;
+	char strbuf[1024];
 	CURLcode ccCurlResult = CURL_LAST;
 	// check parameters
 	if( strURL == NULL || strlen(strURL) == 0 || strFileName == NULL || strlen(strFileName) == 0 )
@@ -142,7 +148,11 @@ void UploadFileStream(char * strURL, char * strFileName)
 				curl_easy_setopt(hCurl, CURLOPT_CUSTOMREQUEST, "PUT");
 				struct curl_slist *headers = NULL;
 				headers = curl_slist_append(headers, "Content-Type:application/octet-stream");
-				headers = curl_slist_append(headers, "x-emc-namespace:open");
+				if(ecsNamespace != NULL && strlen(ecsNamespace) > 0)
+				{
+					sprintf_s(strbuf, 1024, "x-emc-namespace:%s", ecsNamespace);
+					headers = curl_slist_append(headers, strbuf);
+				}
 				curl_easy_setopt(hCurl, CURLOPT_HTTPHEADER, headers);
 				// inform libcurl of the file's size
 				cotFileSize = FileLength;
@@ -180,10 +190,10 @@ void UploadFileStream(char * strURL, char * strFileName)
 int _tmain(int argc, _TCHAR* argv[])
 {
 	// normal file upload
-	//UploadFile("http://192.168.1.6:9000/open/test.txt", "C:\\test.txt");
+	//UploadFile("http://192.168.1.6:9000/open/test.txt", "open", "C:\\test.txt");
 
 	// stream file upload
-	UploadFileStream("http://192.168.1.6:9000/open/test.txt", "C:\\test.txt");
+	UploadFileStream("http://192.168.1.6:9000/open/test2.txt", "open", "C:\\test2.txt");
 
 	printf("Press any key to continue...");
 	_getch();
