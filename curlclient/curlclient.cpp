@@ -7,7 +7,7 @@
 #include <fstream>
 #include <curl/curl.h>
 
-size_t libcurl_read_callback(void * pBuffer, size_t size, size_t nmemb, void * hFile)
+size_t libcurl_read_file(void * pBuffer, size_t size, size_t nmemb, void * hFile)
 {
 	DWORD dwNumberOfBytesRead = 0;
 	BOOL bResult = ReadFile((HANDLE) hFile, pBuffer, size * nmemb, &dwNumberOfBytesRead, NULL);
@@ -79,7 +79,7 @@ void UploadFile(char * strURL ,char*  ecsNamespace, char * strFileName)
 				// the process of upload file
 				curl_easy_setopt(hCurl, CURLOPT_PROGRESSFUNCTION,libcurl_progress_callback);
 				// use custom read function callback read the file
-				curl_easy_setopt(hCurl, CURLOPT_READFUNCTION, libcurl_read_callback);
+				curl_easy_setopt(hCurl, CURLOPT_READFUNCTION, libcurl_read_file);
 				// specify which file to upload
 				curl_easy_setopt(hCurl, CURLOPT_READDATA, hFile);
 				// specify full path of uploaded file
@@ -187,13 +187,81 @@ void UploadFileStream(char * strURL, char* ecsNamespace, char * strFileName)
 	}
 }
 
+
+// upload a string
+void UploadString(char * strURL, char* ecsNamespace, char * content)
+{
+	CURL * hCurl;
+	char strbuf[1024];
+	CURLcode ccCurlResult = CURL_LAST;
+	// check parameters
+	if( strURL == NULL || strlen(strURL) == 0 || content == NULL )
+	{
+		return;
+	}
+
+	// global libcurl initialisation
+	ccCurlResult = curl_global_init(CURL_GLOBAL_WIN32);
+	if(ccCurlResult == 0)
+	{
+		// start libcurl easy session
+		hCurl = curl_easy_init();
+		if(hCurl)
+		{
+			// enable verbose operation
+			curl_easy_setopt(hCurl, CURLOPT_CUSTOMREQUEST, "PUT");
+			// enable verbose operation
+			curl_easy_setopt(hCurl, CURLOPT_VERBOSE, TRUE);
+
+			struct curl_slist *headers = NULL;
+			headers = curl_slist_append(headers, "Content-Type:application/octet-stream");
+			if(ecsNamespace != NULL && strlen(ecsNamespace) > 0)
+			{
+				sprintf_s(strbuf, 1024, "x-emc-namespace:%s", ecsNamespace);
+				headers = curl_slist_append(headers, strbuf);
+			}
+			curl_easy_setopt(hCurl, CURLOPT_HTTPHEADER, headers);
+			// inform libcurl of the size
+			curl_easy_setopt(hCurl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)strlen(content) + 1);
+			// enable progress report function
+			curl_easy_setopt(hCurl, CURLOPT_NOPROGRESS, FALSE);
+			curl_easy_setopt(hCurl, CURLOPT_PROGRESSFUNCTION, libcurl_progress_callback);
+			// inform libcurl of the upload content 
+			curl_easy_setopt(hCurl, CURLOPT_POSTFIELDS, content);
+			// specify full URL of uploaded file
+			curl_easy_setopt(hCurl, CURLOPT_URL, strURL);
+			// execute command
+			ccCurlResult = curl_easy_perform(hCurl);
+			// end libcurl easy session
+			curl_easy_cleanup(hCurl);
+		}
+	}
+	// global libcurl cleanup
+	curl_global_cleanup();
+	if (ccCurlResult == CURLE_OK)
+	{
+		printf("string uploaded successfully.\n");
+	} else {
+		printf("string upload failed. Curl error: %d\n", ccCurlResult);
+	}
+
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	// normal file upload
+	// URL, ECS_namespace, filename
 	//UploadFile("http://192.168.1.6:9000/open/test.txt", "open", "C:\\test.txt");
 
+
 	// stream file upload
-	UploadFileStream("http://192.168.1.6:9000/open/test2.txt", "open", "C:\\test2.txt");
+	// URL, ECS_namespace, filename
+	//UploadFileStream("http://192.168.1.6:9000/open/test2.txt", "open", "C:\\test2.txt");
+
+
+	// string upload
+	// URL, ECS_namespace, contents
+	UploadString("http://192.168.1.6:9000/open/str1", "open", "string contents 00002");
 
 	printf("Press any key to continue...");
 	_getch();
