@@ -247,6 +247,74 @@ void UploadString(char * strURL, char* ecsNamespace, char * content)
 
 }
 
+
+// 实时记录下载进度
+int libcurl_progress_callback_write (void * clientp, double dltotal, double dlnow,double ultotal, double ulnow)
+{
+	printf("downloaded: %d / %d\n", (int) dlnow, (int) dltotal);
+	return 0;
+}
+
+
+// 处理从服务器下载的数据, 并将数据写入流文件
+size_t libcurl_write_stream(void * pBuffer, size_t size, size_t nmemb, void * stream)
+{
+    std::ofstream *is = (std::ofstream*)stream;
+    is->write((char*)pBuffer, size*nmemb);
+
+    return size*nmemb;
+}
+
+
+
+void DownloadFileStream(char * FileUrl, char* strFileName)
+{
+	CURL * hCurl;
+	CURLcode ccCurlResult = CURL_LAST;
+
+	// check parameters
+	if(strFileName == NULL || strlen(strFileName) == 0)
+		return;
+
+	//std::ifstream filestream;
+	std::fstream filestream(strFileName, fstream::out | ios::binary); 
+
+	// global libcurl initialisation
+	ccCurlResult = curl_global_init(CURL_GLOBAL_ALL);
+
+	// start libcurl easy session
+	hCurl = curl_easy_init();
+	if(hCurl)
+	{
+		// enable verbose operation
+		curl_easy_setopt(hCurl, CURLOPT_VERBOSE, TRUE);
+
+		struct curl_slist *headers = NULL;
+		headers = curl_slist_append(headers, "Content-Type:application/octet-stream");
+		headers = curl_slist_append(headers, "x-emc-namespace: ns1");
+
+		curl_easy_setopt(hCurl, CURLOPT_HTTPHEADER, headers);
+
+		// enable progress report function
+		curl_easy_setopt(hCurl, CURLOPT_NOPROGRESS, FALSE);
+		curl_easy_setopt(hCurl, CURLOPT_PROGRESSFUNCTION,libcurl_progress_callback_write);
+
+		curl_easy_setopt(hCurl, CURLOPT_URL, FileUrl);
+
+		curl_easy_setopt(hCurl, CURLOPT_WRITEFUNCTION, libcurl_write_stream);
+
+		curl_easy_setopt(hCurl, CURLOPT_WRITEDATA, &filestream);
+		ccCurlResult = curl_easy_perform(hCurl);
+
+		// end libcurl easy session
+		curl_easy_cleanup(hCurl);
+	}
+	
+	curl_global_cleanup();
+
+	return;
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	// normal file upload
@@ -263,6 +331,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	// URL, ECS_namespace, contents
 	UploadString("http://192.168.1.6:9000/open/str1", "open", "string contents 00002");
 
+	
+	// stream file download
+	// URL, filename
+	DownloadFileStream("http://127.0.0.1:9000/alexbucket/winhttp.md", "test.txt");
+	
+	
 	printf("Press any key to continue...");
 	_getch();
 	return 0;
