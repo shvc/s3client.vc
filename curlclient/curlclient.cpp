@@ -7,6 +7,9 @@
 #include <fstream>
 #include <curl/curl.h>
 
+using std::ios;
+using std::fstream;
+
 size_t libcurl_read_file(void * pBuffer, size_t size, size_t nmemb, void * hFile)
 {
 	DWORD dwNumberOfBytesRead = 0;
@@ -143,7 +146,7 @@ void UploadFileStream(char * strURL, char* ecsNamespace, char * strFileName)
 			{
 				// enable verbose operation
 				curl_easy_setopt(hCurl, CURLOPT_VERBOSE, TRUE);
-				// enable uploading
+				// enable uploading file
 				curl_easy_setopt(hCurl, CURLOPT_UPLOAD, TRUE);
 				curl_easy_setopt(hCurl, CURLOPT_CUSTOMREQUEST, "PUT");
 				struct curl_slist *headers = NULL;
@@ -208,7 +211,7 @@ void UploadString(char * strURL, char* ecsNamespace, char * content)
 		hCurl = curl_easy_init();
 		if(hCurl)
 		{
-			// enable verbose operation
+			// enable PUT operation
 			curl_easy_setopt(hCurl, CURLOPT_CUSTOMREQUEST, "PUT");
 			// enable verbose operation
 			curl_easy_setopt(hCurl, CURLOPT_VERBOSE, TRUE);
@@ -329,12 +332,12 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	// string upload
 	// URL, ECS_namespace, contents
-	UploadString("http://192.168.1.6:9000/open/str1", "open", "string contents 00002");
+	UploadString("http://192.168.55.2:9020/open/str01", "open", "string contents 00002");
 
 	
 	// stream file download
 	// URL, filename
-	DownloadFileStream("http://127.0.0.1:9000/alexbucket/winhttp.md", "test.txt");
+	DownloadFileStream("http://192.168.55.2:9020/open/str01", "test.txt");
 	
 	
 	printf("Press any key to continue...");
