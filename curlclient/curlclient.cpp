@@ -333,6 +333,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	// string upload
 	// URL, ECS_namespace, contents
 	UploadString("http://192.168.55.2:9020/open/str01", "open", "string contents 00002");
+	// upload a base64 string
+	UploadString("http://192.168.55.2:9020/open/img_base64", "open", "iVBORw0KGgoAAAANSUhEUgAAAHkAAAAgAQMAAAAMtUU1AAAABlBMVEUAmQD///95z9q8AAAAAnRSTlP/AOW3MEoAAAABYktHRAH/Ai3eAAAACXBIWXMAAABIAAAASABGyWs+AAAACXZwQWcAAAB5AAAAIACse8WiAAAA4ElEQVQoz63RMWrEMBAF0G+0oGZBFxCeiyzxVXKQBQ/4Yu5yjX8EuXMx+KeQttikC1H5QNKfP9D7cfwBDl1Lw3Icuj4WfTmoMMJIRTVtDq4vOGtRcnAJ21FItZqv5KC9gHOK7GAJ25RJ7TadxcH8Ajdv5mAKy9pIwfbPxcFpwAUjVgc95iKJcbMGObg/O5x3Oyc5yEc1B9mqRZKDrVYDSD4GnPe5YCL357gStw4e49ELlj2RU4xvhZ4jxQgm79FzjOjaO5QYw4l9fIsxvlqHJUZBOnuFa4wKf5b8aw3/sNtvy7ZOnyqzm5sAAAAASUVORK5CYII=");
+
 
 	
 	// stream file download
