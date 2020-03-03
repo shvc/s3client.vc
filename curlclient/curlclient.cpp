@@ -75,6 +75,7 @@ void UploadFile(char *strURL ,char *ecsNamespace, char *strFileName)
 				curl_easy_setopt(curl, CURLOPT_URL, strURL);
 				// execute command
 				ccCurlResult = curl_easy_perform(curl);
+				curl_slist_free_all(headers);
 				// end libcurl easy session
 				curl_easy_cleanup(curl);
 			}
@@ -149,6 +150,7 @@ void UploadFileStream(char *strURL, char *ecsNamespace, char *strFileName)
 				curl_easy_setopt(curl, CURLOPT_URL, strURL);
 				// execute command
 				ccCurlResult = curl_easy_perform(curl);
+				curl_slist_free_all(headers);
 				// end libcurl easy session
 				curl_easy_cleanup(curl);
 			}
@@ -206,6 +208,7 @@ void UploadString(char *strURL, char *ecsNamespace, char *content, int contentLe
 			curl_easy_setopt(curl, CURLOPT_URL, strURL);
 			// execute command
 			ccCurlResult = curl_easy_perform(curl);
+			curl_slist_free_all(headers);
 			// end libcurl easy session
 			curl_easy_cleanup(curl);
 		}
