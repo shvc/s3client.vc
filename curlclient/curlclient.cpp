@@ -10,24 +10,17 @@
 using std::ios;
 using std::fstream;
 
-size_t libcurl_read_file(void * pBuffer, size_t size, size_t nmemb, void * hFile)
+size_t libcurl_read_file(void *pBuffer, size_t size, size_t nmemb, void *hFile)
 {
 	DWORD dwNumberOfBytesRead = 0;
 	BOOL bResult = ReadFile((HANDLE) hFile, pBuffer, size * nmemb, &dwNumberOfBytesRead, NULL);
 	return dwNumberOfBytesRead;
 }
 
-int libcurl_progress_callback (void * clientp, double dltotal, double dlnow,double ultotal, double ulnow)
+void UploadFile(char *strURL ,char *ecsNamespace, char *strFileName)
 {
-	printf("Uploaded: %d / %d\n", (int) ulnow, (int) ultotal);
-	return 0;
-}
-
-void UploadFile(char * strURL ,char*  ecsNamespace, char * strFileName)
-{
-	CURL * hCurl;
+	CURL *curl;
 	HANDLE hFile;
-	char strbuf[1024];
 	CURLcode ccCurlResult = CURL_LAST;
 	// curl_off_t 
 	curl_off_t cotFileSize;
@@ -55,42 +48,35 @@ void UploadFile(char * strURL ,char*  ecsNamespace, char * strFileName)
 		if(ccCurlResult == 0)
 		{
 			// start libcurl easy session
-			hCurl = curl_easy_init();
-			if(hCurl)
+			curl = curl_easy_init();
+			if(curl)
 			{
 				// enable verbose operation
-				curl_easy_setopt(hCurl, CURLOPT_VERBOSE, TRUE);
+				curl_easy_setopt(curl, CURLOPT_VERBOSE, TRUE);
 				// enable uploading
-				curl_easy_setopt(hCurl, CURLOPT_UPLOAD, TRUE);
-				curl_easy_setopt(hCurl, CURLOPT_CUSTOMREQUEST, "PUT");
+				curl_easy_setopt(curl, CURLOPT_UPLOAD, TRUE);
+				curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
 				
 				struct curl_slist *headers = NULL;
 				headers = curl_slist_append(headers, "Content-Type:application/octet-stream");
-				if(ecsNamespace != NULL && strlen(ecsNamespace) > 0)
-				{
-					sprintf_s(strbuf, 1024, "x-emc-namespace:%s", ecsNamespace);
-					headers = curl_slist_append(headers, strbuf);
-				}
-				curl_easy_setopt(hCurl, CURLOPT_HTTPHEADER, headers);
+				headers = curl_slist_append(headers, "x-emc-namespace:ns1");
+				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 				
 				// inform libcurl of the file's size
 				GetFileSizeEx(hFile, &liFileSize);
 				cotFileSize = liFileSize.QuadPart;
-				curl_easy_setopt(hCurl, CURLOPT_INFILESIZE_LARGE,cotFileSize);
-				// enable progress report function
-				curl_easy_setopt(hCurl, CURLOPT_NOPROGRESS, FALSE);
-				// the process of upload file
-				curl_easy_setopt(hCurl, CURLOPT_PROGRESSFUNCTION,libcurl_progress_callback);
+				curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, cotFileSize);
+
 				// use custom read function callback read the file
-				curl_easy_setopt(hCurl, CURLOPT_READFUNCTION, libcurl_read_file);
+				curl_easy_setopt(curl, CURLOPT_READFUNCTION, libcurl_read_file);
 				// specify which file to upload
-				curl_easy_setopt(hCurl, CURLOPT_READDATA, hFile);
+				curl_easy_setopt(curl, CURLOPT_READDATA, hFile);
 				// specify full path of uploaded file
-				curl_easy_setopt(hCurl, CURLOPT_URL, strURL);
+				curl_easy_setopt(curl, CURLOPT_URL, strURL);
 				// execute command
-				ccCurlResult = curl_easy_perform(hCurl);
+				ccCurlResult = curl_easy_perform(curl);
 				// end libcurl easy session
-				curl_easy_cleanup(hCurl);
+				curl_easy_cleanup(curl);
 			}
 		}
 		// release file handle
@@ -108,18 +94,17 @@ void UploadFile(char * strURL ,char*  ecsNamespace, char * strFileName)
 }
 
 
-size_t libcurl_read_stream(void * pBuffer, size_t size, size_t nmemb, void * stream)
+size_t libcurl_read_stream(void *pBuffer, size_t size, size_t nmemb, void *stream)
 {
 	std::ifstream *is = (std::ifstream*)stream;
 	is->read((char*)pBuffer, size * nmemb); 
 	return is->gcount();
 }
 
-void UploadFileStream(char * strURL, char* ecsNamespace, char * strFileName)
+void UploadFileStream(char *strURL, char *ecsNamespace, char *strFileName)
 {
-	CURL * hCurl;
+	CURL *curl;
 	curl_off_t cotFileSize;
-	char strbuf[1024];
 	CURLcode ccCurlResult = CURL_LAST;
 	// check parameters
 	if( strURL == NULL || strlen(strURL) == 0 || strFileName == NULL || strlen(strFileName) == 0 )
@@ -141,38 +126,31 @@ void UploadFileStream(char * strURL, char* ecsNamespace, char * strFileName)
 		if(ccCurlResult == 0)
 		{
 			// start libcurl easy session
-			hCurl = curl_easy_init();
-			if(hCurl)
+			curl = curl_easy_init();
+			if(curl)
 			{
 				// enable verbose operation
-				curl_easy_setopt(hCurl, CURLOPT_VERBOSE, TRUE);
+				curl_easy_setopt(curl, CURLOPT_VERBOSE, TRUE);
 				// enable uploading file
-				curl_easy_setopt(hCurl, CURLOPT_UPLOAD, TRUE);
-				curl_easy_setopt(hCurl, CURLOPT_CUSTOMREQUEST, "PUT");
+				curl_easy_setopt(curl, CURLOPT_UPLOAD, TRUE);
+				curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
 				struct curl_slist *headers = NULL;
 				headers = curl_slist_append(headers, "Content-Type:application/octet-stream");
-				if(ecsNamespace != NULL && strlen(ecsNamespace) > 0)
-				{
-					sprintf_s(strbuf, 1024, "x-emc-namespace:%s", ecsNamespace);
-					headers = curl_slist_append(headers, strbuf);
-				}
-				curl_easy_setopt(hCurl, CURLOPT_HTTPHEADER, headers);
+				headers = curl_slist_append(headers, "x-emc-namespace:ns1");
+				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 				// inform libcurl of the file's size
 				cotFileSize = FileLength;
-				curl_easy_setopt(hCurl, CURLOPT_INFILESIZE_LARGE, cotFileSize);
-				// enable progress report function
-				curl_easy_setopt(hCurl, CURLOPT_NOPROGRESS, FALSE);
-				curl_easy_setopt(hCurl, CURLOPT_PROGRESSFUNCTION, libcurl_progress_callback);
+				curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, cotFileSize);
 				// use custom read function callback read the file
-				curl_easy_setopt(hCurl, CURLOPT_READFUNCTION, libcurl_read_stream);
+				curl_easy_setopt(curl, CURLOPT_READFUNCTION, libcurl_read_stream);
 				// specify which file to upload
-				curl_easy_setopt(hCurl, CURLOPT_READDATA, &filestream);
+				curl_easy_setopt(curl, CURLOPT_READDATA, &filestream);
 				// specify full URL of uploaded file
-				curl_easy_setopt(hCurl, CURLOPT_URL, strURL);
+				curl_easy_setopt(curl, CURLOPT_URL, strURL);
 				// execute command
-				ccCurlResult = curl_easy_perform(hCurl);
+				ccCurlResult = curl_easy_perform(curl);
 				// end libcurl easy session
-				curl_easy_cleanup(hCurl);
+				curl_easy_cleanup(curl);
 			}
 		}
 
@@ -192,10 +170,9 @@ void UploadFileStream(char * strURL, char* ecsNamespace, char * strFileName)
 
 
 // upload a string
-void UploadString(char * strURL, char* ecsNamespace, char * content)
+void UploadString(char *strURL, char *ecsNamespace, char *content, int contentLen)
 {
-	CURL * hCurl;
-	char strbuf[1024];
+	CURL *curl;
 	CURLcode ccCurlResult = CURL_LAST;
 	// check parameters
 	if( strURL == NULL || strlen(strURL) == 0 || content == NULL )
@@ -208,35 +185,29 @@ void UploadString(char * strURL, char* ecsNamespace, char * content)
 	if(ccCurlResult == 0)
 	{
 		// start libcurl easy session
-		hCurl = curl_easy_init();
-		if(hCurl)
+		curl = curl_easy_init();
+		if(curl)
 		{
 			// enable PUT operation
-			curl_easy_setopt(hCurl, CURLOPT_CUSTOMREQUEST, "PUT");
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
 			// enable verbose operation
-			curl_easy_setopt(hCurl, CURLOPT_VERBOSE, TRUE);
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, TRUE);
 
 			struct curl_slist *headers = NULL;
 			headers = curl_slist_append(headers, "Content-Type:application/octet-stream");
-			if(ecsNamespace != NULL && strlen(ecsNamespace) > 0)
-			{
-				sprintf_s(strbuf, 1024, "x-emc-namespace:%s", ecsNamespace);
-				headers = curl_slist_append(headers, strbuf);
-			}
-			curl_easy_setopt(hCurl, CURLOPT_HTTPHEADER, headers);
+			headers = curl_slist_append(headers, "x-emc-namespace:ns1");
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 			// inform libcurl of the size
-			curl_easy_setopt(hCurl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)strlen(content) + 1);
-			// enable progress report function
-			curl_easy_setopt(hCurl, CURLOPT_NOPROGRESS, FALSE);
-			curl_easy_setopt(hCurl, CURLOPT_PROGRESSFUNCTION, libcurl_progress_callback);
+			//curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)strlen(content) + 1);
 			// inform libcurl of the upload content 
-			curl_easy_setopt(hCurl, CURLOPT_POSTFIELDS, content);
+			curl_easy_setopt(curl, CURLOPT_COPYPOSTFIELDS, content);
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, contentLen);
 			// specify full URL of uploaded file
-			curl_easy_setopt(hCurl, CURLOPT_URL, strURL);
+			curl_easy_setopt(curl, CURLOPT_URL, strURL);
 			// execute command
-			ccCurlResult = curl_easy_perform(hCurl);
+			ccCurlResult = curl_easy_perform(curl);
 			// end libcurl easy session
-			curl_easy_cleanup(hCurl);
+			curl_easy_cleanup(curl);
 		}
 	}
 	// global libcurl cleanup
@@ -251,16 +222,8 @@ void UploadString(char * strURL, char* ecsNamespace, char * content)
 }
 
 
-// 实时记录下载进度
-int libcurl_progress_callback_write (void * clientp, double dltotal, double dlnow,double ultotal, double ulnow)
-{
-	printf("downloaded: %d / %d\n", (int) dlnow, (int) dltotal);
-	return 0;
-}
-
-
 // 处理从服务器下载的数据, 并将数据写入流文件
-size_t libcurl_write_stream(void * pBuffer, size_t size, size_t nmemb, void * stream)
+size_t libcurl_write_stream(void *pBuffer, size_t size, size_t nmemb, void *stream)
 {
     std::ofstream *is = (std::ofstream*)stream;
     is->write((char*)pBuffer, size*nmemb);
@@ -270,14 +233,15 @@ size_t libcurl_write_stream(void * pBuffer, size_t size, size_t nmemb, void * st
 
 
 
-void DownloadFileStream(char * FileUrl, char* strFileName)
+void DownloadFileStream(char *FileUrl, char *strFileName)
 {
-	CURL * hCurl;
+	CURL *curl;
 	CURLcode ccCurlResult = CURL_LAST;
 
 	// check parameters
-	if(strFileName == NULL || strlen(strFileName) == 0)
+	if(strFileName == NULL || strlen(strFileName) == 0) {
 		return;
+	}
 
 	//std::ifstream filestream;
 	std::fstream filestream(strFileName, fstream::out | ios::binary); 
@@ -286,39 +250,35 @@ void DownloadFileStream(char * FileUrl, char* strFileName)
 	ccCurlResult = curl_global_init(CURL_GLOBAL_ALL);
 
 	// start libcurl easy session
-	hCurl = curl_easy_init();
-	if(hCurl)
+	curl = curl_easy_init();
+	if(curl)
 	{
 		// enable verbose operation
-		curl_easy_setopt(hCurl, CURLOPT_VERBOSE, TRUE);
+		curl_easy_setopt(curl, CURLOPT_VERBOSE, TRUE);
 
 		struct curl_slist *headers = NULL;
 		headers = curl_slist_append(headers, "Content-Type:application/octet-stream");
 		headers = curl_slist_append(headers, "x-emc-namespace: ns1");
 
-		curl_easy_setopt(hCurl, CURLOPT_HTTPHEADER, headers);
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-		// enable progress report function
-		curl_easy_setopt(hCurl, CURLOPT_NOPROGRESS, FALSE);
-		curl_easy_setopt(hCurl, CURLOPT_PROGRESSFUNCTION,libcurl_progress_callback_write);
+		curl_easy_setopt(curl, CURLOPT_URL, FileUrl);
 
-		curl_easy_setopt(hCurl, CURLOPT_URL, FileUrl);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, libcurl_write_stream);
 
-		curl_easy_setopt(hCurl, CURLOPT_WRITEFUNCTION, libcurl_write_stream);
-
-		curl_easy_setopt(hCurl, CURLOPT_WRITEDATA, &filestream);
-		ccCurlResult = curl_easy_perform(hCurl);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &filestream);
+		ccCurlResult = curl_easy_perform(curl);
+		curl_slist_free_all(headers);
 
 		// end libcurl easy session
-		curl_easy_cleanup(hCurl);
+		curl_easy_cleanup(curl);
 	}
-	
 	curl_global_cleanup();
 
 	return;
 }
 
-int _tmain(int argc, _TCHAR* argv[])
+int _tmain(int argc, _TCHAR *argv[])
 {
 	// normal file upload
 	// URL, ECS_namespace, filename
@@ -332,10 +292,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	// string upload
 	// URL, ECS_namespace, contents
-	UploadString("http://192.168.55.2:9020/open/str01", "open", "string contents 00002");
-	// upload a base64 string
-	UploadString("http://192.168.55.2:9020/open/img_base64", "open", "iVBORw0KGgoAAAANSUhEUgAAAHkAAAAgAQMAAAAMtUU1AAAABlBMVEUAmQD///95z9q8AAAAAnRSTlP/AOW3MEoAAAABYktHRAH/Ai3eAAAACXBIWXMAAABIAAAASABGyWs+AAAACXZwQWcAAAB5AAAAIACse8WiAAAA4ElEQVQoz63RMWrEMBAF0G+0oGZBFxCeiyzxVXKQBQ/4Yu5yjX8EuXMx+KeQttikC1H5QNKfP9D7cfwBDl1Lw3Icuj4WfTmoMMJIRTVtDq4vOGtRcnAJ21FItZqv5KC9gHOK7GAJ25RJ7TadxcH8Ajdv5mAKy9pIwfbPxcFpwAUjVgc95iKJcbMGObg/O5x3Oyc5yEc1B9mqRZKDrVYDSD4GnPe5YCL357gStw4e49ELlj2RU4xvhZ4jxQgm79FzjOjaO5QYw4l9fIsxvlqHJUZBOnuFa4wKf5b8aw3/sNtvy7ZOnyqzm5sAAAAASUVORK5CYII=");
-
+	UploadString("http://192.168.55.2:9020/open/str01", "open", "string\0contents 00002", 22);
 
 	
 	// stream file download
