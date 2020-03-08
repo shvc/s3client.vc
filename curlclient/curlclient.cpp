@@ -390,10 +390,12 @@ int _tmain(int argc, _TCHAR *argv[])
 	DownloadFileStream("http://192.168.55.2:9020/open/str01", "test.txt");
 
 
-	char *buff;
+	char *buff = NULL;
 	// download file to memory buff
 	// URL(http://ip:port/bucket/key), buff(will auto grow)
 	size_t buff_len = Download("http://192.168.55.2:9020/open/str01", buff)
+	// use buff here
+	free(buff)
 	
 	printf("Press any key to continue...");
 	_getch();
