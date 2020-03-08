@@ -392,6 +392,7 @@ int _tmain(int argc, _TCHAR *argv[])
 
 	char *buff;
 	// download file to memory buff
+	// URL(http://ip:port/bucket/key), buff(will auto grow)
 	size_t buff_len = Download("http://192.168.55.2:9020/open/str01", buff)
 	
 	printf("Press any key to continue...");
