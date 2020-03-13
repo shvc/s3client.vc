@@ -9,18 +9,25 @@ A winhttp client to download file
 
 ## shell
 ```sh
-file=/tmp/aaaa.txt
-objname="testfile2.txt"
+#!/bin/sh
+
+s3Key="object_user1"
+s3Secret="ChangeMe"
+
 bucket=test
+objname="testfile2.txt"
+file=/tmp/aaaa.txt
+
 url="https://object.ecstestdrive.com/test"
 resource="/${bucket}/${objname}"
+
 contentType="application/x-compressed-tar"
+
 dateValue=`date -R -u`
 echo $dateValue;
 stringToSign="PUT\n\n${contentType}\n${dateValue}\n${resource}"
-s3Key="131085564036648177@ecstestdrive.emc.com"
-s3Secret="gNOr3iIGAye41Efetaf7E0yI9R9KZRYZV9c3OP69"
 signature=`echo -en ${stringToSign} | openssl sha1 -hmac ${s3Secret} -binary | base64`
+
 curl -v -X PUT -T "${file}" \
   -H "Date: ${dateValue}" \
   -H "Content-Type: ${contentType}" \
